@@ -38,11 +38,28 @@ async function run() {
         })
 
         //adding order into db
-        app.post('/part', async (req, res) => {
+        app.post('/order', async (req, res) => {
             const part = req.body
             const result = await orderCollection.insertOne(part)
             res.send(result)
             console.log(result)
+        })
+
+        //updating parts quantity
+        app.put('/parts/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedPart = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    availableQuantity: updatedPart.availableQuantity,
+
+                }
+            };
+            const result = await partCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+
         })
     }
     finally {
