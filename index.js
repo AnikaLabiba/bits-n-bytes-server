@@ -16,12 +16,40 @@ app.use(cors())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.zrsmd.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-client.connect(err => {
-    const collection = client.db("bits-n-bytes").collection("parts");
-    // perform actions on the collection object
-    console.log('db connected');
-    client.close();
-});
+
+async function run() {
+    try {
+        await client.connect()
+        const partCollection = client.db("bits-n-bytes").collection("parts");
+        const orderCollection = client.db("bits-n-bytes").collection("order");
+
+        //get all parts
+        app.get('/parts', async (req, res) => {
+            const parts = await partCollection.find().toArray()
+            res.send(parts)
+        })
+
+        //get parts ny id
+        app.get('/part/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const part = await partCollection.findOne(query)
+            res.send(part)
+        })
+
+        //adding order into db
+        app.post('/part', async (req, res) => {
+            const part = req.body
+            const result = await orderCollection.insertOne(part)
+            res.send(result)
+            console.log(result)
+        })
+    }
+    finally {
+
+    }
+}
+run().catch(console.dir)
 
 
 app.get('/', (req, res) => {
