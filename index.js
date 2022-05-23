@@ -38,6 +38,22 @@ async function run() {
         await client.connect()
         const partCollection = client.db("bits-n-bytes").collection("parts");
         const orderCollection = client.db("bits-n-bytes").collection("order");
+        const userCollection = client.db("bits-n-bytes").collection("user");
+
+
+        //create user with jwt and store in database
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email
+            const user = req.body
+            const filter = { email: email }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: user
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc, options)
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ result, token })
+        })
 
         //get all parts
         app.get('/parts', async (req, res) => {
