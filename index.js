@@ -193,6 +193,11 @@ async function run() {
             const result = await reviewCollection.insertOne(review)
             res.send(result)
         })
+        //get all review
+        app.get('/review', verifyJWT, async (req, res) => {
+            const reviews = await reviewCollection.find().toArray()
+            res.send(reviews)
+        })
     }
     finally {
 
