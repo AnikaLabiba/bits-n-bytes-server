@@ -40,6 +40,24 @@ async function run() {
         const orderCollection = client.db("bits-n-bytes").collection("order");
         const userCollection = client.db("bits-n-bytes").collection("user");
 
+        //verifing admin
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email
+            const requesterAccount = await userCollection.findOne({ email: requester })
+            if (requesterAccount.role === 'admin') {
+                next()
+            } else {
+                return res.status(403).send({ message: 'Forbidden accsess' })
+            }
+        }
+
+        //getting user with role admin
+        app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin })
+        })
 
         //create user with jwt and store in database
         app.put('/user/:email', async (req, res) => {
