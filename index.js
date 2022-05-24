@@ -39,6 +39,7 @@ async function run() {
         const partCollection = client.db("bits-n-bytes").collection("parts");
         const orderCollection = client.db("bits-n-bytes").collection("order");
         const userCollection = client.db("bits-n-bytes").collection("user");
+        const reviewCollection = client.db("bits-n-bytes").collection("review");
 
         //verifing admin
         const verifyAdmin = async (req, res, next) => {
@@ -184,6 +185,13 @@ async function run() {
                 return res.status(403).send({ message: 'Forbidden accsess' })
             }
 
+        })
+
+        //create review
+        app.post('/review', verifyJWT, async (req, res) => {
+            const review = req.body
+            const result = await reviewCollection.insertOne(review)
+            res.send(result)
         })
     }
     finally {
