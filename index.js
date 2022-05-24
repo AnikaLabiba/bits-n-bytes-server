@@ -73,20 +73,39 @@ async function run() {
             res.send({ result, token })
         })
 
-        //get user by filtering email
-        app.get('/user', async (req, res) => {
+        //get all user from db
+        app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
+            const users = await userCollection.find().toArray();
+            res.send(users);
+        });
+
+        //get user by filtering email (my profile)
+        app.get('/user', verifyJWT, async (req, res) => {
             const email = req.query.email
-            // const decodedEmail = req.decoded.email
-            // if (email === decodedEmail) {
-            const query = { email: email }
-            const user = await userCollection.findOne(query)
-            res.send(user)
-            // }
-            // else {
-            //     return res.status(403).send({ message: 'Forbidden accsess' })
-            // }
+            const decodedEmail = req.decoded.email
+            if (email === decodedEmail) {
+                const query = { email: email }
+                const user = await userCollection.findOne(query)
+                res.send(user)
+            }
+            else {
+                return res.status(403).send({ message: 'Forbidden accsess' })
+            }
 
         })
+
+        //make admin
+        app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
+            const email = req.params.email
+
+            const filter = { email: email }
+            const updatedDoc = {
+                $set: { role: 'admin' }
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc)
+            res.send(result)
+        })
+
 
         // //update user profile
         // app.put('/user/:email', async (req, res) => {
