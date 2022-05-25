@@ -190,8 +190,15 @@ async function run() {
             res.send(result);
 
         })
+
+        //get all orders
+        app.get('/orders', verifyJWT, verifyAdmin, async (req, res) => {
+            const orders = await orderCollection.find().toArray()
+            res.send(orders)
+        })
+
         //getting my orders by filtering email
-        app.get('/orders', verifyJWT, async (req, res) => {
+        app.get('/order', verifyJWT, async (req, res) => {
             const email = req.query.email
             const decodedEmail = req.decoded.email
             if (email === decodedEmail) {
@@ -212,7 +219,7 @@ async function run() {
             res.send(result)
         })
         //get all review
-        app.get('/review', verifyJWT, async (req, res) => {
+        app.get('/review', async (req, res) => {
             const reviews = await reviewCollection.find().toArray()
             res.send(reviews)
         })
