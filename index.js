@@ -158,6 +158,14 @@ async function run() {
             res.send(result)
         })
 
+        //delete part
+        app.delete('/part/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) }
+            const result = await partCollection.deleteOne(filter)
+            res.send(result)
+        })
+
         //adding order into db
         app.post('/order', async (req, res) => {
             const part = req.body
