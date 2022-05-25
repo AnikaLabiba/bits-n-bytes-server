@@ -26,6 +26,7 @@ function verifyJWT(req, res, next) {
     const token = authHeader.split(' ')[1];
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
         if (err) {
+            console.log(err);
             return res.status(403).send({ message: 'Forbidden access' })
         }
         req.decoded = decoded;
@@ -70,7 +71,9 @@ async function run() {
                 $set: user
             }
             const result = await userCollection.updateOne(filter, updatedDoc, options)
-            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '1d'
+            });
             res.send({ result, token })
         })
 
