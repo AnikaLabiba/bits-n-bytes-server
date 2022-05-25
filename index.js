@@ -151,6 +151,13 @@ async function run() {
             res.send(part)
         })
 
+        //create part
+        app.post('/part', verifyJWT, verifyAdmin, async (req, res) => {
+            const part = req.body
+            const result = await partCollection.insertOne(part)
+            res.send(result)
+        })
+
         //adding order into db
         app.post('/order', async (req, res) => {
             const part = req.body
