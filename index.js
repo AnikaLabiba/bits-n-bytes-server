@@ -250,6 +250,14 @@ async function run() {
             res.send(updatedOrder);
         })
 
+        //delete order
+        app.delete('/order/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: ObjectId(id) }
+            const result = await orderCollection.deleteOne(filter)
+            res.send(result)
+        })
+
         //create review
         app.post('/review', verifyJWT, async (req, res) => {
             const review = req.body
