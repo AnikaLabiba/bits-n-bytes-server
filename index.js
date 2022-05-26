@@ -3,7 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const app = express()
 const port = process.env.PORT || 5000
@@ -41,6 +41,7 @@ async function run() {
         const orderCollection = client.db("bits-n-bytes").collection("order");
         const userCollection = client.db("bits-n-bytes").collection("user");
         const reviewCollection = client.db("bits-n-bytes").collection("review");
+        const paymentCollection = client.db("bits-n-bytes").collection("payment");
 
         //verifing admin
         const verifyAdmin = async (req, res, next) => {
@@ -52,6 +53,19 @@ async function run() {
                 return res.status(403).send({ message: 'Forbidden accsess' })
             }
         }
+
+        //Payment
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const order = req.body;
+            const price = order.price;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            });
+            res.send({ clientSecret: paymentIntent.client_secret })
+        });
 
         //getting user with role admin
         app.get('/admin/:email', async (req, res) => {
@@ -209,7 +223,31 @@ async function run() {
             else {
                 return res.status(403).send({ message: 'Forbidden accsess' })
             }
+        })
 
+        //get order by id
+        app.get('/order/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const order = await orderCollection.findOne(query)
+            res.send(order)
+        })
+
+        //update order with payment info
+        app.patch('/order/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+
+            const result = await paymentCollection.insertOne(payment);
+            const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(updatedOrder);
         })
 
         //create review
