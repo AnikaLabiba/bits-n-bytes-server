@@ -250,6 +250,20 @@ async function run() {
             res.send(updatedOrder);
         })
 
+        //update paid order status to shipped
+        app.put('/order/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const updatedStatus = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    shipped: true
+                }
+            }
+            const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(updatedOrder);
+        })
+
         //delete order
         app.delete('/order/:id', verifyJWT, async (req, res) => {
             const id = req.params.id
