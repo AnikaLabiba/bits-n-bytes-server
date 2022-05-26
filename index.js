@@ -126,30 +126,29 @@ async function run() {
 
 
         // //update user profile
-        // app.put('/user/:email', async (req, res) => {
-        //     const email = req.params.email
-        //     // const decodedEmail = req.decoded.email
-        //     // if (email === decodedEmail) {
-        //     const filter = { email: email }
-        //     const user = req.body
-        //     const options = { upsert: true };
-        //     const updatedDoc = {
-        //         $set: {
-        //             name: user.name,
-        //             phone: user.phone,
+        app.put('/user/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email
+            const decodedEmail = req.decoded.email
+            if (email === decodedEmail) {
+                const filter = { email: email }
+                const user = req.body
+                const options = { upsert: true };
+                const updatedDoc = {
+                    $set: {
+                        name: user.name,
+                        phone: user.phone,
+                        education: user.education,
+                        address: user.address,
+                        linkedIn: user.linkedIn,
+                    },
+                };
+                const result = await userCollection.updateOne(filter, updatedDoc, options);
+                res.send(result)
+            } else {
+                return res.status(403).send({ message: 'Forbidden accsess' })
+            }
 
-        //             img: user.img,
-        //             address: user.address,
-        //             linkedIn: user.linkedIn,
-        //         },
-        //     };
-        //     const result = await userCollection.updateOne(filter, updatedDoc, options);
-        //     res.send(result)
-        //     // } else {
-        //     //     return res.status(403).send({ message: 'Forbidden accsess' })
-        //     // }
-
-        // })
+        })
 
         //get all parts
         app.get('/parts', async (req, res) => {
